@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Page Template</title>
+    <script type="text/javascript" src="d3.js"></script>
+    <style type="text/css">
+      div.button {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        padding: 2px;
+        background-color: teal;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      // Set plot area
+      var margin = {top: 10, right: 10, bottom: 50, left: 50};
+      var width = 960 - margin.left - margin.right;
+      var height = 500 - margin.top - margin.bottom;
+
+      var svg = d3.select("body").append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var x = d3.scaleLinear()
+                      .range([0, width]);
+      var y = d3.scaleLinear()
+                      .range([height, 0]);
+
+      // Add paragraph
+      var paragraph = d3.select("body")
+                          .append("p")
+      n_clicks = 0;
+      var update_paragraph = function(){
+        paragraph
+          .text("You have clicked " + n_clicks + " goddamn times.");
+      }
+      update_paragraph();
+
+      // Set dataset
+      n_bars = 10;
+      var dataset = new Array(n_bars).fill(0);
+      // var dataset = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+      // Set scale domains
+      x.domain([-1, n_bars]);
+      var set_ydomain = function(){
+        y.domain([0, d3.max(dataset.concat([1]))]);
+      }
+      set_ydomain();
+
+      // Set axes
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+      yaxis_g = svg.append("g");
+      var set_yaxis = function(){
+        yaxis_g.call(d3.axisLeft().scale(y));
+      }
+      set_yaxis();
+
+      // Draw bars and define update function
+      var bar_width = (x(1) - x(0))*0.75;
+      var bars = svg.selectAll("rect")
+                    .data(dataset)
+                    .enter()
+                    .append("rect")
+
+      var draw_bars = function(){
+        bars
+          .data(dataset)
+          .attr("x", function(d, i) { return x(i) - bar_width/2;})
+          .attr("y", function(d, i) { return y(d);})
+          .attr("width", bar_width)
+          .attr("height", function(d, i) { return y(0) - y(d);});
+      }
+
+      draw_bars()
+
+      // Add button and update action
+      var button_cx = width*0.08;
+      var button_cy = height*0.08;
+      var button_width = 100;
+      var button_height = 35;
+      var button = svg.append("g");
+      button.append("rect")
+              .attr("x", button_cx - button_width/2)
+              .attr("y", button_cy - button_height/2)
+              .attr("width", button_width)
+              .attr("height", button_height)
+              .attr("fill", "teal");
+
+      button.append("text")
+              .attr("x", button_cx)
+              .attr("y", button_cy)
+              .attr("text-anchor", "middle")
+              .attr("alignment-baseline", "middle")
+              .attr("font-family", "sans-serif")
+              .attr("fill", "white")
+              .text("CLICK ME!");
+
+      button.style('cursor', 'pointer');
+
+      button.on("click", function(){
+        n_clicks++;
+        var updated_bin = Math.floor(Math.random()*n_bars);
+        dataset[updated_bin]++;
+        set_ydomain();
+        set_yaxis();
+        draw_bars();
+        update_paragraph();
+      });
+
+    </script>
+  </body>
+</html>
